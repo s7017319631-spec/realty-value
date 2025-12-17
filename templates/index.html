@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оценка квартир - Ауезовский район</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .main-card {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 20px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            display: none;
+        }
+        
+        .price-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .price-per-sqm {
+            font-size: 1.2rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .range-bar {
+            height: 20px;
+            background: linear-gradient(90deg, var(--success) 0%, var(--warning) 50%, var(--danger) 100%);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .range-marker {
+            position: absolute;
+            top: -25px;
+            width: 2px;
+            height: 30px;
+            background: var(--primary);
+        }
+        
+        .recommendation {
+            background: #e8f4fc;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .mobile-optimized {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .price-display {
+                font-size: 2rem;
+            }
+            
+            .main-card {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+        
+        .info-badge {
+            background: #e8f4fc;
+            color: var(--secondary);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                🏠 Оценка квартир
+            </a>
+            <span class="navbar-text ms-auto d-none d-md-block">
+                Ауезовский район, Алматы
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mobile-optimized">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <!-- Основная карточка -->
+                <div class="card main-card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">📊 Оценка стоимости 2-комнатной квартиры </h3>
+                        <p class="mb-0 mt-2 opacity-75">Год постройки - не ранее 1990 года</p>
+                        <p class="mb-0 mt-2 opacity-75">Заполните форму для получения оценки</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Форма ввода -->
+                        <form id="predictionForm">
+                            <div class="row g-3">
+                                <!-- Обязательные поля -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Общая площадь (м²) *</label>
+                                    <input type="number" class="form-control" id="area_total" 
+                                           min="30" max="100" step="0.1" value="55" required>
+                                    <div class="form-text">Для 2-комнатных: 45-65 м²</div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Высота потолков (м)</label>
+                                    <input type="number" class="form-control" id="ceiling_height" 
+                                           min="2.0" max="3.5" step="0.1" value="2.7">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Этаж квартиры *</label>
+                                    <input type="number" class="form-control" id="floor" 
+                                           min="1" max="30" value="3" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Всего этажей в доме *</label>
+                                    <input type="number" class="form-control" id="total_floors" 
+                                           min="1" max="30" value="9" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Год постройки *</label>
+                                    <input type="number" class="form-control" id="year_build" 
+                                           min="1990" max="2024" value="2010" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Тип дома *</label>
+                                    <select class="form-select" id="building_type" required>
+                                        <option value="панельный" selected>Панельный</option>
+                                        <option value="монолитный">Монолитный</option>
+                                        <option value="кирпичный">Кирпичный</option>
+                                        <option value="каркасно-камышитовый">Каркасно-камышитовый</option>
+                                        <option value="иное">Иное</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Адрес -->
+                                <div class="col-12">
+                                    <label class="form-label">Адрес (для определения микрорайона)</label>
+                                    <input type="text" class="form-control" id="address_short" 
+                                           placeholder="мкр. Мамыр-4, ул. Толе би">
+                                    <div class="form-text">Укажите для точной оценки по микрорайону</div>
+                                </div>
+                                
+                                <!-- Инфо-бейдж -->
+                                <div class="col-12">
+                                    <div class="info-badge">
+                                        <small>💡 <strong>Поля помеченные * обязательны для заполнения</strong></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Кнопка оценки -->
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-primary btn-lg" onclick="calculate()">
+                                    🧮 Оценить стоимость
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Индикатор загрузки -->
+                        <div class="loading" id="loadingIndicator">
+                            <div class="spinner"></div>
+                            <p>Выполняется оценка...</p>
+                        </div>
+                        
+                        <!-- Результаты -->
+                        <div class="result-card" id="resultCard">
+                            <div class="text-center mb-4">
+                                <h4 class="text-success">✅ ОЦЕНКА ЗАВЕРШЕНА</h4>
+                                <p class="text-muted" id="resultTimestamp"></p>
+                            </div>
+                            
+                            <!-- Основная цена -->
+                            <div class="price-display" id="totalPrice"></div>
+                            <div class="price-per-sqm" id="pricePerSqm"></div>
+                            
+                            <!-- Диапазон оценки -->
+                            <div class="mb-4">
+                                <h6>📈 Диапазон оценки:</h6>
+                                <div class="range-bar">
+                                    <div class="range-marker" id="rangeMarker"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small id="rangeMin"></small>
+                                    <small id="rangeMax"></small>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted" id="rangeNote"></small>
+                                </div>
+                            </div>
+                            
+                            <!-- Детали -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h6>📍 Микрорайон</h6>
+                                            <p class="mb-1" id="microdistrictInfo">Не указан</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h6>⚠️ Сейсмическая безопасность</h6>
+                                            <p class="mb-1" id="seismicInfo">Оценивается...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Рекомендации -->
+                            <div class="recommendation" id="recommendation">
+                                <h6>💡 Рекомендации</h6>
+                                <p id="recommendationText">Загрузка рекомендаций...</p>
+                            </div>
+                            
+                            <!-- Кнопка новой оценки -->
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-outline-primary" onclick="resetForm()">
+                                    🔄 Новая оценка
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Информация о микрорайонах -->
+                <div class="card mt-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6>🏘️ Поддерживаемые микрорайоны Ауезовского района:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li>Мамыр (1-7)</li>
+                                    <li>Жетысу (1-4)</li>
+                                    <li>Аксай (1-5)</li>
+                                    <li>Шанырак (1-5)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="mb-0">
+                                    <li>Школьный, Астана</li>
+                                    <li>Дубок, Таугуль</li>
+                                    <li>Сайран, Баян-Аул</li>
+                                    <li>Айгерим, Кирово</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        async function calculate() {
+            // Показать загрузку если есть элемент
+            const loadingEl = document.getElementById('loading');
+            const resultEl = document.getElementById('result');
+            
+            if (loadingEl) {
+                loadingEl.style.display = 'block';
+            }
+            
+            if (resultEl) {
+                resultEl.style.display = 'none';
+                resultEl.innerHTML = ''; // Очистить предыдущие результаты
+            }
+            
+            try {
+                // Собрать данные из формы
+                const data = {
+                    area_total: parseFloat(document.getElementById('area_total').value) || 50,
+                    floor: parseInt(document.getElementById('floor').value) || 5,
+                    total_floors: parseInt(document.getElementById('total_floors').value) || 9,
+                    year_build: parseInt(document.getElementById('year_build').value) || 2015,
+                    building_type: document.getElementById('building_type').value || 'монолитный'
+                };
+                
+                // Опциональные поля
+                const roomsInput = document.getElementById('rooms');
+                const microdistrictInput = document.getElementById('microdistrict');
+                
+                if (roomsInput && roomsInput.value) data.rooms = parseInt(roomsInput.value);
+                if (microdistrictInput && microdistrictInput.value) data.microdistrict = microdistrictInput.value;
+                
+                console.log('📤 Отправляем данные:', data);
+                
+                // Отправить запрос
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📥 Получен ответ:', result);
+                
+                // Скрыть загрузку
+                if (loadingEl) loadingEl.style.display = 'none';
+                
+                // Обработка результата
+                if (result.success) {
+                    if (resultEl) {
+                        // Форматируем числа с разделителями тысяч
+                        const formatNumber = (num) => {
+                            return new Intl.NumberFormat('ru-RU').format(Math.round(num));
+                        };
+                        
+                        let resultHTML = `
+                            <h3>✅ Результаты оценки:</h3>
+                            <p><strong>Цена за м²:</strong> ${formatNumber(result.price_per_sqm)} ₸</p>
+                            <p><strong>Общая стоимость:</strong> ${formatNumber(result.total_price)} ₸</p>
+                        `;
+                        
+                        if (result.confidence_interval) {
+                            resultHTML += `
+                                <p><strong>Диапазон:</strong> ${formatNumber(result.confidence_interval.lower)} - ${formatNumber(result.confidence_interval.upper)} ₸</p>
+                            `;
+                        }
+                        
+                        if (result.model_mode) {
+                            resultHTML += `<p><strong>Режим модели:</strong> ${result.model_mode}</p>`;
+                        }
+                        
+                        if (result.note) {
+                            resultHTML += `<p><em>${result.note}</em></p>`;
+                        }
+                        
+                        resultEl.innerHTML = resultHTML;
+                        resultEl.style.display = 'block';
+                    } else {
+                        alert(`✅ Оценка завершена!\nОбщая стоимость: ${result.total_price} ₸`);
+                    }
+                } else {
+                    const errorMsg = result.error || 'Неизвестная ошибка';
+                    if (resultEl) {
+                        resultEl.innerHTML = `
+                            <h3>❌ Ошибка:</h3>
+                            <p>${errorMsg}</p>
+                        `;
+                        resultEl.style.display = 'block';
+                    } else {
+                        alert(`Ошибка: ${errorMsg}`);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка в функции calculate:', error);
+                
+                // Скрыть загрузку
+                if (loadingEl) loadingEl.style.display = 'none';
+                
+                // Показать ошибку
+                if (resultEl) {
+                    resultEl.innerHTML = `
+                        <h3>❌ Ошибка соединения:</h3>
+                        <p>${error.message}</p>
+                        <p>Проверьте:</p>
+                        <ul>
+                            <li>Работает ли сервер?</li>
+                            <li>Есть ли интернет-соединение?</li>
+                        </ul>
+                    `;
+                    resultEl.style.display = 'block';
+                } else {
+                    alert(`Ошибка соединения: ${error.message}\n\nПроверьте, работает ли сервер Flask.`);
+                }
+            }
+        }
+        
+        // Функция сброса формы
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('address_short').value = '';
+            
+            // Прокрутить к началу
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Автоматический расчет при изменении значений
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('change', function() {
+                // Скрыть предыдущие результаты
+                document.getElementById('resultCard').style.display = 'none';
+            });
+        });
+        
+        // Проверка здоровья API при загрузке
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                console.log('API статус:', data.status);
+            } catch (error) {
+                console.warn('API не доступен, используется оффлайн-режим');
+            }
+        });
+        
+        // PWA функциональность
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker зарегистрирован');
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker не зарегистрирован:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
