@@ -3,6 +3,5 @@ __pycache__/
 .env
 venv/
 env/
-*.pkl
 *.pickle
 .DS_Store
