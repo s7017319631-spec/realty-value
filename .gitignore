@@ -3,5 +3,4 @@ __pycache__/
 .env
 venv/
 env/
-*.pickle
 .DS_Store
